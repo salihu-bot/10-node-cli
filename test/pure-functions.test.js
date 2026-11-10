@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { parseArgs } from "../src/args.js";
-import { addExpense, listExpenses } from "../src/expenses.js";
+import { addExpense, deleteExpense, editExpense, listExpenses } from "../src/expenses.js";
 import { summarizeExpenses, toCsv } from "../src/report.js";
 
 const expenseInput = {
@@ -120,6 +120,36 @@ describe("listExpenses", () => {
   });
 });
 
+describe("editExpense and deleteExpense", () => {
+  it("edits an expense by ID prefix without mutating the original list", () => {
+    const result = editExpense(sampleExpenses, "on", { amount: "3000", note: " Updated " });
+
+    assert.deepEqual(result[0], { ...sampleExpenses[0], amount: 3000, note: "Updated" });
+    assert.deepEqual(sampleExpenses[0], {
+      id: "one",
+      amount: 2500,
+      category: "food",
+      note: "Lunch",
+      date: "2026-11-03",
+    });
+  });
+
+  it("rejects ambiguous and missing expense IDs", () => {
+    assert.throws(() => editExpense(sampleExpenses, "t", { amount: 1 }), /ambiguous/);
+    assert.throws(() => deleteExpense(sampleExpenses, "missing"), /No expense found/);
+  });
+
+  it("rejects invalid edits and empty update sets", () => {
+    assert.throws(() => editExpense(sampleExpenses, "one", { amount: 0 }), /positive number/);
+    assert.throws(() => editExpense(sampleExpenses, "one", {}), /at least one field/);
+  });
+
+  it("deletes only the matching expense without mutating the original list", () => {
+    assert.deepEqual(deleteExpense(sampleExpenses, "tw"), [sampleExpenses[0], sampleExpenses[2]]);
+    assert.equal(sampleExpenses.length, 3);
+  });
+});
+
 describe("summarizeExpenses", () => {
   it("calculates monthly total, category totals, bars, and biggest expense", () => {
     const summary = summarizeExpenses(sampleExpenses, { month: "2026-11", budget: 10000 });
@@ -149,6 +179,10 @@ describe("summarizeExpenses", () => {
     assert.equal(summary.total, 0);
     assert.deepEqual(summary.categories, []);
     assert.equal(summary.biggest, null);
+  });
+
+  it("rejects an invalid budget", () => {
+    assert.throws(() => summarizeExpenses(sampleExpenses, { budget: 0 }), /positive number/);
   });
 });
 

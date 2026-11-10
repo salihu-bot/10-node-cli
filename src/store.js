@@ -5,6 +5,19 @@ import { fileURLToPath } from "node:url";
 const dataFile = resolve(dirname(fileURLToPath(import.meta.url)), "../data/expenses.json");
 const settingsFile = resolve(dirname(fileURLToPath(import.meta.url)), "../data/settings.json");
 
+function validateSettings(settings) {
+  if (!settings || typeof settings !== "object" || Array.isArray(settings)) {
+    throw new TypeError("Settings must be an object.");
+  }
+  if (
+    Object.hasOwn(settings, "budget") &&
+    (!Number.isFinite(settings.budget) || settings.budget <= 0)
+  ) {
+    throw new Error("The saved budget must be a positive number.");
+  }
+  return settings;
+}
+
 async function loadJson(file, defaultContents, description) {
   await mkdir(dirname(file), { recursive: true });
 
@@ -27,8 +40,8 @@ async function loadJson(file, defaultContents, description) {
   if (description === "expense data" && !Array.isArray(value)) {
     throw new Error("Expense data must be a JSON array.");
   }
-  if (description === "settings" && (typeof value !== "object" || value === null || Array.isArray(value))) {
-    throw new Error("Settings data must be a JSON object.");
+  if (description === "settings") {
+    validateSettings(value);
   }
   return value;
 }
@@ -50,9 +63,7 @@ export async function loadSettings() {
 }
 
 export async function saveSettings(settings) {
-  if (!settings || typeof settings !== "object" || Array.isArray(settings)) {
-    throw new TypeError("Settings must be an object.");
-  }
+  validateSettings(settings);
   await mkdir(dirname(settingsFile), { recursive: true });
   await writeFile(settingsFile, `${JSON.stringify(settings, null, 2)}\n`, "utf8");
 }
