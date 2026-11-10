@@ -1,0 +1,6 @@
+amount,category,note,date
+2500,food,"Lunch, with a friend",2026-11-03
+1800,transport,"Driver said ""thank you""",2026-11-04
+3500,shopping,"Market visit
+fresh produce",2026-11-05
+not-a-number,food,Invalid amount,2026-11-06

@@ -16,6 +16,17 @@ export function parseArgs(argv) {
         throw new Error("Option names cannot be empty.");
       }
 
+      if (name === "no-color") {
+        if (equalsIndex !== -1) {
+          throw new Error("--no-color does not take a value.");
+        }
+        if (Object.hasOwn(options, name)) {
+          throw new Error("Option --no-color was provided more than once.");
+        }
+        options[name] = true;
+        continue;
+      }
+
       const value =
         equalsIndex === -1
           ? argv[++index]

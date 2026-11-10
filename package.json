@@ -3,10 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "bin": {
+    "expense": "./bin/expense.js"
+  },
   "engines": {
     "node": ">=20"
   },
   "scripts": {
-    "start": "node bin/expense.js"
+    "start": "node bin/expense.js",
+    "test": "node --test"
   }
 }
